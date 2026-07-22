@@ -32,7 +32,7 @@ $fix-codex-lag Diagnose this PC. Ask before any repair.
 4. For an inconclusive result, shows a transparent health score, confidence, and whether safe optimization is available.
 5. Only then offers the relevant repair, optimization, monitoring, or no-action choice.
 
-The monitor runs every 60 minutes by default and never repairs automatically.
+One clean check only means the issue was not seen right now; an intermittent problem can return. The optional monitor checks every 60 minutes by default and never repairs automatically.
 
 ## Safety
 

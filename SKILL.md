@@ -58,8 +58,11 @@ Uncertainty: <missing or conflicting evidence; inconclusive only>
 Actionability: <exact repair | safe optimization and tradeoff | no action needed>
 Next choice:
 1. <action>
-2. Leave it alone.
+2. <scheduled diagnosis when offered, otherwise leave it alone>
+3. <leave it alone when three choices are shown>
 ```
+
+Use two choices for `NO_TARGETED_PROBLEM`. Use three choices for `INCONCLUSIVE` when both a primary action and scheduled diagnosis are available.
 
 ### Score uncertain health
 
@@ -94,11 +97,11 @@ Do not repair until the user selects option 1. If the available UI supports a st
 
 #### Manual run: no targeted problem
 
-State unambiguously that no targeted problem was detected and set `Problems` to `None detected in this window`. Do not bury this conclusion under process counts.
+State unambiguously that no targeted problem was detected and set `Problems` to `None detected in this window`. Do not bury this conclusion under process counts. Then say plainly: `One clean check only means the issue was not seen right now; it may be intermittent and return later.` Localize this sentence naturally and keep it to one line.
 
 If `FixCodexLag Monitor` is absent, ask:
 
-1. Enable scheduled diagnosis.
+1. Enable scheduled diagnosis (check and notify only; never repair automatically).
 2. Leave it alone.
 
 If the monitor already exists, report that fact and do not create or offer a duplicate.
@@ -107,17 +110,23 @@ If the monitor already exists, report that fact and do not create or offer a dup
 
 Show the health score or range, confidence, missing evidence, and whether a safe conservative optimization exists.
 
+Then say plainly: `This check could not reach a firm conclusion. Not confirming the issue now does not prove it is absent or will not return.` Localize this sentence naturally and keep it to one line.
+
 Mark optimization `Available` only when it is specific, reversible, and preserves every `PROTECTED`, `ACTIVE`, and `UNKNOWN` process. Describe it before asking. Never disguise process guessing or another project's workflow change as optimization.
 
 When safe optimization is available, ask:
 
 1. Apply the described conservative optimization.
-2. Leave it alone.
+2. Enable scheduled diagnosis (check and notify only; never optimize automatically).
+3. Leave it alone.
 
 When no safe optimization is available, say so and ask:
 
 1. Collect deeper diagnostic evidence to look for a safe optimization.
-2. Leave it alone.
+2. Enable scheduled diagnosis (check and notify only; never optimize automatically).
+3. Leave it alone.
+
+If `FixCodexLag Monitor` already exists, report that fact, remove the scheduled-diagnosis choice, renumber the remaining choices, and do not create a duplicate.
 
 #### After a one-time repair or optimization
 
