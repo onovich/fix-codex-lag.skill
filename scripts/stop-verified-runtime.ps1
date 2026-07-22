@@ -79,7 +79,26 @@ if ([string]$manifest.Classification -cne "STALE") {
 
 $evidence = @($manifest.Evidence | ForEach-Object { ([string]$_).Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Sort-Object -Unique)
 if ($evidence.Count -lt 2) {
-    throw "Manifest must contain at least two distinct stale-evidence statements."
+    throw "Manifest must contain at least two distinct stale-evidence codes."
+}
+$allowedEvidenceCodes = @(
+    "inactive-task-marker",
+    "inactive-workspace-only",
+    "task-close-before-runtime",
+    "orphaned-supervisor-no-client",
+    "runtime-release-record"
+)
+$ownershipEvidenceCodes = @(
+    "inactive-task-marker",
+    "inactive-workspace-only",
+    "task-close-before-runtime",
+    "runtime-release-record"
+)
+if (@($evidence | Where-Object { $allowedEvidenceCodes -notcontains $_ }).Count -gt 0) {
+    throw "Manifest contains an unsupported stale-evidence code."
+}
+if (@($evidence | Where-Object { $ownershipEvidenceCodes -contains $_ }).Count -lt 1) {
+    throw "Manifest lacks an evidence code that establishes task or runtime ownership."
 }
 
 $rootIds = @($manifest.RootProcessIds | ForEach-Object { [int]$_ } | Sort-Object -Unique)

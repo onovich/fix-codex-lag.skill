@@ -12,10 +12,11 @@ param(
     [int[]]$ProtectedProcessId = @(),
 
     [Parameter(Mandatory = $true)]
-    [ValidateCount(2, 10)]
-    [string[]]$Evidence,
+    [Alias("Evidence")]
+    [ValidateNotNullOrEmpty()]
+    [string]$EvidenceCode,
 
-    [string]$OutputPath = (Join-Path (Get-Location) ("cleanup-manifest-{0}.json" -f (Get-Date -Format "yyyyMMdd-HHmmss")))
+    [string]$OutputPath = (Join-Path ([IO.Path]::GetTempPath()) ("cleanup-manifest-{0}.json" -f (Get-Date -Format "yyyyMMdd-HHmmss")))
 )
 
 Set-StrictMode -Version Latest
@@ -40,9 +41,28 @@ if (-not [bool]$snapshot.CimAvailable) {
     throw "The snapshot has no bounded CIM metadata. It cannot be used for cleanup."
 }
 
-$cleanEvidence = @($Evidence | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Sort-Object -Unique)
+$allowedEvidenceCodes = @(
+    "inactive-task-marker",
+    "inactive-workspace-only",
+    "task-close-before-runtime",
+    "orphaned-supervisor-no-client",
+    "runtime-release-record"
+)
+$cleanEvidence = @($EvidenceCode -split "," | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Sort-Object -Unique)
 if ($cleanEvidence.Count -lt 2) {
-    throw "Provide at least two distinct evidence statements."
+    throw "Provide at least two distinct evidence codes."
+}
+if (@($cleanEvidence | Where-Object { $allowedEvidenceCodes -notcontains $_ }).Count -gt 0) {
+    throw "Use only supported stale-evidence codes."
+}
+$ownershipEvidenceCodes = @(
+    "inactive-task-marker",
+    "inactive-workspace-only",
+    "task-close-before-runtime",
+    "runtime-release-record"
+)
+if (@($cleanEvidence | Where-Object { $ownershipEvidenceCodes -contains $_ }).Count -lt 1) {
+    throw "At least one evidence code must establish task or runtime ownership."
 }
 
 $runningByPid = @{}

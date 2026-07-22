@@ -77,6 +77,8 @@ Important fields:
 
 If `CimAvailable` is false, the snapshot cannot safely drive cleanup because parent and command identity are incomplete. Use it only to diagnose pressure.
 
+Snapshots remain private artifacts after default redaction because PIDs, timestamps, and stable command hashes are required for local identity checks. Create a separate aggregate summary for publication; never upload a snapshot or cleanup manifest directly.
+
 Sampling limitations:
 
 - polling can miss helpers that live for less than the sample interval;
@@ -169,12 +171,14 @@ A group is eligible only when:
 1. its ownership is unique;
 2. its owner is explicitly inactive;
 3. no member is protected or shared;
-4. at least two independent evidence statements are recorded;
+4. at least two independent evidence codes are recorded;
 5. the snapshot contains start time and command hash for every member;
 6. the preview shows exactly the intended tree;
 7. the live tree has not changed since the manifest was built.
 
 If any condition fails, keep the group as `UNKNOWN`.
+
+Record manifest evidence with controlled codes only: `inactive-task-marker`, `inactive-workspace-only`, `task-close-before-runtime`, `orphaned-supervisor-no-client`, and `runtime-release-record`. Use at least two distinct codes and at least one code other than `orphaned-supervisor-no-client`. Do not put task names, project names, paths, or prompt text into the manifest.
 
 ## 6. Mitigation matrix
 

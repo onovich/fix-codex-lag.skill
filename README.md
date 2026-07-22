@@ -87,13 +87,18 @@ $fix-codex-lag Disable only the automation named FixCodexLag Monitor and verify 
 
 ## Privacy
 
-Snapshots omit raw command lines and redact common user/host paths by default. Keep ETL traces, non-redacted snapshots, prompts, tokens, private paths, and task identifiers out of public reports.
+Snapshots omit raw command lines and redact user/host values, common absolute paths, email addresses, UUIDs, network addresses, and common credential forms by default. Cleanup manifests accept controlled evidence codes instead of free-form evidence text.
+
+Generated snapshots, manifests, and ETL traces are private diagnostic artifacts, not publication-ready reports. Never commit or upload them directly. Public reports should contain only aggregate counts, durations, product/OS versions, role names, and placeholders. Omit PIDs and command-line hashes unless essential; a stable hash can still fingerprint a repeated local command.
+
+`-IncludeCommandLine` and `-NoRedact` are explicit local-debugging overrides. Files created with either option must stay private and be deleted after use.
 
 ## Repository layout
 
 - `SKILL.md` — agent workflow and decision gates
 - `agents/openai.yaml` — Codex UI metadata
 - `scripts/collect-runtime.ps1` — bounded process sampler
+- `scripts/protect-sensitive-text.ps1` — shared default-redaction helper
 - `scripts/new-cleanup-manifest.ps1` — identity-locked cleanup manifest builder
 - `scripts/stop-verified-runtime.ps1` — preview-first verified executor
 - `references/windows-runbook.md` — diagnosis details

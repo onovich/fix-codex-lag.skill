@@ -23,6 +23,7 @@ Before offering repair or scheduling, compare the installed Codex version and cu
 - Limit cleanup to five verified roots per batch. Preview, execute, then resample before another batch.
 - Require explicit user authority before restarting Codex Desktop because a restart interrupts every active task.
 - Resolve bundled scripts relative to this `SKILL.md`. Write snapshots, manifests, and traces to a unique temporary directory, never into a project repository or the installed/distributed skill folder.
+- Treat every snapshot, manifest, and ETL trace as private even when default redaction is enabled. Never commit or publish those artifacts directly.
 - Never let a scheduled run terminate processes, restart Codex, edit projects, or message other tasks. Scheduling is diagnosis and notification only.
 
 ## Apply the interactive decision gate
@@ -127,7 +128,7 @@ $Executor = Join-Path $SkillRoot 'scripts\stop-verified-runtime.ps1'
 
 The collector records CPU deltas, starts/exits seen during sampling, process identity, parent PID, memory, handles, role hints, and command-line hashes. It omits raw command lines and redacts paths by default.
 
-If WMI/CIM is timing out, rerun once with `-SkipCim`; use the result only for pressure diagnosis, not destructive ownership decisions. If exact command lines are needed locally, use `-IncludeCommandLine -NoRedact`, keep the file private, and delete it after analysis.
+If WMI/CIM is timing out, rerun once with `-SkipCim`; use the result only for pressure diagnosis, not destructive ownership decisions. If exact command lines are needed locally, use `-IncludeCommandLine -NoRedact`, keep the file private, and delete it after analysis. Default redaction is defense in depth, not permission to publish the raw snapshot.
 
 Read [references/windows-runbook.md](references/windows-runbook.md) when interpreting the snapshot, correlating logs, using WPR, or distinguishing the two failure modes.
 
@@ -142,13 +143,15 @@ Use exactly four classes:
 
 Acceptable independent stale proofs include:
 
-1. An exact task/thread marker maps to a completed or archived task.
-2. A unique workspace/runtime marker maps only to inactive tasks and no active task shares it.
-3. A task-close or tool-exit event predates the still-running group.
-4. The original task supervisor is gone and the remaining group is idle with no live client/listener.
-5. A private runtime registry or product log explicitly releases that group.
+1. `inactive-task-marker`: an exact task/thread marker maps to a completed or archived task.
+2. `inactive-workspace-only`: a unique workspace/runtime marker maps only to inactive tasks and no active task shares it.
+3. `task-close-before-runtime`: a task-close or tool-exit event predates the still-running group.
+4. `orphaned-supervisor-no-client`: the original task supervisor is gone and the remaining group is idle with no live client/listener.
+5. `runtime-release-record`: a private runtime registry or product log explicitly releases that group.
 
 Idle samples, high age, generic `server.mjs` arguments, or excess group count are supporting symptoms only. Require at least one ownership proof among items 1, 2, 3, or 5.
+
+Use only the evidence codes above in cleanup manifests. Keep workspace names, task IDs, paths, prompt text, and free-form evidence out of manifest files.
 
 ### 4. Identify the triggering failure mode
 
@@ -175,7 +178,7 @@ Clean only a uniquely attributed stale root. Never subtract the number of active
 
 ### 5. Build and execute an identity-locked cleanup manifest
 
-Only after the user selects one-time repair, create a manifest for each verified stale root. Supply two or more concise, sanitized evidence statements and every known active/protected PID:
+Only after the user selects one-time repair, create a manifest for each verified stale root. Supply two or more controlled evidence codes and every known active/protected PID:
 
 ```powershell
 $Manifest = Join-Path $RunRoot 'cleanup-manifest.json'
@@ -185,7 +188,7 @@ $Manifest = Join-Path $RunRoot 'cleanup-manifest.json'
   -SnapshotPath $Snapshot `
   -RootProcessId 12345 `
   -ProtectedProcessId 111,222 `
-  -Evidence 'Exact task marker maps to an inactive task','No active task shares this runtime root' `
+  -EvidenceCode 'inactive-task-marker,runtime-release-record' `
   -OutputPath $Manifest
 ```
 
@@ -227,4 +230,4 @@ Report:
 - before/after measurements;
 - residual risk and the safest next action.
 
-For public evidence, replace usernames, paths, project names, task IDs, PIDs, ports, prompt text, and tokens with placeholders. Keep product/OS versions, aggregate counts, timing, role names, and non-reversible hashes only when useful.
+For public evidence, create a separate summary and replace usernames, paths, project names, task IDs, PIDs, ports, prompt text, and tokens with placeholders. Keep product/OS versions, aggregate counts, timing, and role names. Omit command-line hashes unless they are essential because stable hashes can fingerprint repeated local commands.

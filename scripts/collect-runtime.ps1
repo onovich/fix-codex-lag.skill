@@ -8,7 +8,7 @@ param(
     [ValidateRange(100, 5000)]
     [int]$SampleMilliseconds = 250,
 
-    [string]$OutputPath = (Join-Path (Get-Location) ("runtime-snapshot-{0}.json" -f (Get-Date -Format "yyyyMMdd-HHmmss"))),
+    [string]$OutputPath = (Join-Path ([IO.Path]::GetTempPath()) ("runtime-snapshot-{0}.json" -f (Get-Date -Format "yyyyMMdd-HHmmss"))),
 
     [switch]$IncludeCommandLine,
     [switch]$IncludeNetwork,
@@ -18,6 +18,8 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+. (Join-Path $PSScriptRoot "protect-sensitive-text.ps1")
 
 function Get-Sha256 {
     param([AllowNull()][string]$Text)
@@ -43,30 +45,7 @@ function Redact-Text {
         return $Text
     }
 
-    $result = $Text
-    $replacements = @(
-        [pscustomobject]@{ Value = $env:LOCALAPPDATA; Token = "%LOCALAPPDATA%" }
-        [pscustomobject]@{ Value = $env:APPDATA; Token = "%APPDATA%" }
-        [pscustomobject]@{ Value = $env:TEMP; Token = "%TEMP%" }
-        [pscustomobject]@{ Value = $env:USERPROFILE; Token = "%USERPROFILE%" }
-        [pscustomobject]@{ Value = (Get-Location).Path; Token = "%CWD%" }
-        [pscustomobject]@{ Value = $env:USERNAME; Token = "<USER>" }
-        [pscustomobject]@{ Value = $env:COMPUTERNAME; Token = "<HOST>" }
-    ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Value) } | Sort-Object { $_.Value.Length } -Descending
-
-    foreach ($replacement in $replacements) {
-        $result = [regex]::Replace(
-            $result,
-            [regex]::Escape([string]$replacement.Value),
-            [string]$replacement.Token,
-            [Text.RegularExpressions.RegexOptions]::IgnoreCase
-        )
-    }
-
-    # Remove remaining absolute Windows paths. Keep environment tokens introduced above.
-    $result = [regex]::Replace($result, '(?i)"[a-z]:\\[^\"]*"', '"<PATH>"')
-    $result = [regex]::Replace($result, '(?i)(?<![%\w])[a-z]:\\[^\s\"]*', '<PATH>')
-    return $result
+    return Protect-SensitiveText -Text $Text -CurrentDirectory (Get-Location).Path
 }
 
 function Get-SafeValue {
