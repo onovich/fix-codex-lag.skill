@@ -1,4 +1,4 @@
 interface:
   display_name: "FixCodexLag"
   short_description: "Safely diagnose and relieve Codex lag"
-  default_prompt: "Use $fix-codex-lag to diagnose Codex-related Windows lag, ask before a one-time repair, and optionally offer a diagnosis-only monitor."
+  default_prompt: "Use $fix-codex-lag to diagnose Codex-related Windows lag, report a clear verdict, score uncertain health, and ask before any repair or optimization."

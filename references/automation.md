@@ -35,7 +35,7 @@ Do not display or hand-write a raw recurrence rule. Translate the cadence throug
 Use this prompt content:
 
 ```text
-Use $fix-codex-lag in scheduled diagnosis mode. Run one bounded, low-overhead diagnosis. Never stop a process, restart Codex, edit a project, or message another task automatically. If a targeted cleanup-churn or verified-stale-runtime signature is present, show sanitized evidence and ask: 1. Execute a one-time repair; 2. Leave it alone. If no target is present, report a short healthy-window result and end. Do not offer or create another monitor from this scheduled run.
+Use $fix-codex-lag in scheduled diagnosis mode. Run one bounded, low-overhead diagnosis and lead with exactly one clear verdict: problem found, no targeted problem detected, or inconclusive. Never stop a process, restart Codex, edit a project, or message another task automatically. If a targeted cleanup-churn or verified-stale-runtime signature is confirmed, list each problem with sanitized evidence and ask whether to start a manual one-time repair. If no target is present and the evidence is sufficient, state clearly that no targeted problem was detected and end. If evidence is inconclusive, report the FixCodexLag health score or range, confidence, missing evidence, and whether a safe optimization exists; never optimize automatically. Do not offer or create another monitor from this scheduled run.
 ```
 
 After the tool call, view the automation and verify its name, enabled state, target task, cadence, and prompt safety language.

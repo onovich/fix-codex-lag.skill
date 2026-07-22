@@ -129,7 +129,7 @@ Do not run repeated WMI queries while capturing. Keep the ETL private unless it 
 - If the trigger is the current authorized operation, cancel or serialize that operation and let file changes settle before requesting one final Git/review pass.
 - If another active task is the trigger, preserve it and report the task token and operation. Let the user decide whether to pause it.
 - If an inactive task owns a unique runtime root, use the identity-locked manifest flow.
-- If cancellation occurs inside the shared app-server and no leaf ownership exists, a full app restart is safer than PID guessing. Obtain user approval first.
+- If cancellation occurs inside the shared app-server and no leaf ownership exists, preserve the shared tree. Report that the current evidence does not support a safe one-time repair and offer deeper diagnosis or no action.
 
 ## 5. Retained-runtime investigation
 
@@ -185,7 +185,7 @@ Record manifest evidence with controlled codes only: `inactive-task-marker`, `in
 | Situation | Temporary action | Forbidden shortcut |
 |---|---|---|
 | Unique stale leaf group | Preview and execute identity-locked manifest | Kill all Node/CMD by name |
-| Generic clusters under shared app-server | Preserve; offer approved full app restart | Kill oldest/excess clusters |
+| Generic clusters under shared app-server | Preserve; gather stronger ownership evidence | Kill oldest/excess clusters |
 | Active task causes Git/cancellation churn | Report exact operation; pause only with user authority | Instruct the other task to redesign its work |
 | Inactive task causes unique churn | Stop verified stale tree, then resample | Kill WMI/Defender/DWM |
 | Generated tree triggers repeated review | Propose ignore/move/serialize mitigation within project scope | Modify another project silently |

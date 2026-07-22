@@ -28,8 +28,9 @@ $fix-codex-lag Diagnose this PC. Ask before any repair.
 
 1. Takes one bounded diagnostic snapshot.
 2. Separates active, protected, stale, and unknown process groups.
-3. If a target problem is found, offers a one-time repair or no action.
-4. If no problem is found, optionally offers a diagnosis-only monitor.
+3. Reports a clear verdict: problem found, no targeted problem, or inconclusive.
+4. For an inconclusive result, shows a transparent health score, confidence, and whether safe optimization is available.
+5. Only then offers the relevant repair, optimization, monitoring, or no-action choice.
 
 The monitor runs every 60 minutes by default and never repairs automatically.
 
@@ -38,7 +39,6 @@ The monitor runs every 60 minutes by default and never repairs automatically.
 - Never kills by process name or wildcard.
 - Preserves Codex itself, active tasks, unrelated projects, and anything with uncertain ownership.
 - Requires strong stale-ownership evidence, previews the exact process tree, and revalidates its identity before termination.
-- Requires separate approval before restarting Codex Desktop.
 - Stores diagnostic artifacts in a temporary directory and redacts sensitive text by default.
 
 ## Time and version scope
